@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link rel="stylesheet" href="css/stlyedeleteedit.css">
+</head>
+<body>
+<?php
+// Database connection
+include('database/dbconfig.php');
+// Update user
+if (isset($_POST['update'])) {
+    $id = $_POST['id'];
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $email = $_POST['email'];
+    $conn->query("UPDATE register SET firstname='$firstname', lastname='$lastname', email='$email' WHERE id='$id'");
+    echo "User updated successfully.";
+}
+// Delete user
+if (isset($_GET['delete_id'])) {
+    $delete_id = $_GET['delete_id'];
+    $conn->query("DELETE FROM register WHERE id='$delete_id'");
+    echo "User deleted successfully.";
+}
+// Fetch all users
+$users = $conn->query("SELECT * FROM register");
+// Display users
+echo "<h1>Registered Users</h1>";
+echo "<table border='1'>
+        <tr>
+            <th>Firstname</th>
+            <th>Lastname</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>";
+while ($row = $users->fetch_assoc()) {
+    echo "<tr>
+            <td>".$row['firstname']."</td>
+            <td>".$row['lastname']."</td>
+            <td>".$row['email']."</td>
+            <td>
+                <a href='?edit_id=".$row['id']."'>Edit</a> |
+                <a href='?delete_id=".$row['id']."' onclick='return confirm(\"Are you sure you want to delete this user?\")'>Delete</a>
+            </td>
+        </tr>";
+}
+echo "</table>";
+// Edit user
+if (isset($_GET['edit_id'])) {
+    $edit_id = $_GET['edit_id'];
+    $user = $conn->query("SELECT * FROM register WHERE id='$edit_id'")->fetch_assoc();
+    echo "<h2>Edit User</h2>
+          <form method='POST'>
+              <input type='hidden' name='id' value='".$user['id']."'>
+              <input type='text' name='firstname' value='".$user['firstname']."' required>
+              <input type='text' name='lastname' value='".$user['lastname']."' required>
+              <input type='email' name='email' value='".$user['email']."' required>
+              <button type='submit' name='update'>Update</button>
+          </form>";
+}
+$conn->close();
+?>
+</body>
+</html>
